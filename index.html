@@ -1,1 +1,161 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Linux Practice Terminal</title>
+
+<style>
+    body {
+        margin: 0;
+        background-color: #0d1117;
+        color: #00ff00;
+        font-family: monospace;
+        font-size: 16px;
+    }
+
+    #terminal {
+        padding: 15px;
+        white-space: pre-wrap;
+    }
+
+    .input-line {
+        display: flex;
+    }
+
+    .prompt {
+        margin-right: 5px;
+    }
+
+    input {
+        background: transparent;
+        border: none;
+        color: #00ff00;
+        outline: none;
+        width: 100%;
+        font-family: monospace;
+        font-size: 16px;
+    }
+</style>
+</head>
+
+<body>
+
+<div id="terminal">
+Welcome to Linux Practice Terminal  
+Type "help" to see available commands  
+
+</div>
+
+<div class="input-line">
+    <span class="prompt" id="prompt"></span>
+    <input type="text" id="commandInput" autofocus />
+</div>
+
+<script>
+const terminal = document.getElementById("terminal");
+const input = document.getElementById("commandInput");
+const prompt = document.getElementById("prompt");
+
+let currentUser = "student";
+let currentDirectory = "/home/student";
+
+const fileSystem = {
+    "/home/student": ["Documents", "Downloads", "Desktop", "file.txt"],
+    "/home/student/Documents": ["notes.txt", "project.docx"],
+    "/home/student/Downloads": ["linux.iso", "tools.zip"],
+    "/home/student/Desktop": ["image.png"]
+};
+
+function updatePrompt() {
+    prompt.textContent = currentUser + "@" + "linux:" + currentDirectory + "$";
+}
+
+function print(text) {
+    terminal.innerHTML += text + "\n";
+}
+
+function runCommand(command) {
+
+    let parts = command.split(" ");
+    let base = parts[0];
+
+    switch(base) {
+
+        case "help":
+            print("Available commands:");
+            print("help, ls, pwd, whoami, date, clear, cd");
+            break;
+
+        case "ls":
+            let files = fileSystem[currentDirectory];
+            if(files) {
+                print(files.join("   "));
+            } else {
+                print("Directory not found");
+            }
+            break;
+
+        case "pwd":
+            print(currentDirectory);
+            break;
+
+        case "whoami":
+            print(currentUser);
+            break;
+
+        case "date":
+            print(new Date().toString());
+            break;
+
+        case "clear":
+            terminal.innerHTML = "";
+            break;
+
+        case "cd":
+            if(parts.length < 2) {
+                print("cd: missing argument");
+                break;
+            }
+
+            let target = parts[1];
+
+            if(target === "..") {
+                let splitPath = currentDirectory.split("/");
+                if(splitPath.length > 2) {
+                    splitPath.pop();
+                    currentDirectory = splitPath.join("/");
+                }
+            } else {
+                let newPath = currentDirectory + "/" + target;
+                if(fileSystem[newPath]) {
+                    currentDirectory = newPath;
+                } else {
+                    print("cd: no such directory: " + target);
+                }
+            }
+            break;
+
+        default:
+            print(base + ": command not found");
+    }
+}
+
+input.addEventListener("keydown", function(e) {
+    if(e.key === "Enter") {
+
+        let command = input.value.trim();
+        print(prompt.textContent + " " + command);
+        runCommand(command);
+
+        input.value = "";
+        updatePrompt();
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+});
+
+updatePrompt();
+</script>
+
+</body>
+</html>
